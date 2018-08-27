@@ -1,0 +1,58 @@
+Call function FirebaseNotificationHelper:
+
+ private void sendSampleNotification() {
+
+        String server_key = getContext().getString(R.string.firebase_server_key);
+
+        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+
+        FirebaseNotificationHelper.initialize(server_key)
+                .defaultJson(false, getJsonBody())
+                .setCallBack(new FirebaseNotiCallBack() {
+                    @Override
+                    public void success(String s) {
+                        Toast.makeText(getContext(), "Send Notification Success", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void fail(String s) {
+                        Toast.makeText(getContext(), "Send Notification Fail", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .receiverFirebaseToken(refreshedToken)
+                .send();
+    }
+
+    private String getJsonBody() {
+
+        JSONObject jsonObjectData = new JSONObject();
+        try {
+            jsonObjectData.put(Constants.KEY_TITLE, "Custom Title");
+            jsonObjectData.put(Constants.KEY_TEXT, "Custom Mess");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        return jsonObjectData.toString();
+    }
+
+
+    //inport in AndroidManifest
+
+            <service
+                android:name=".widgets.fcm.MyFirebaseInstanceIDService"
+                android:enabled="true"
+                android:exported="true">
+                <intent-filter>
+                    <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+                </intent-filter>
+            </service>
+            <service
+                android:name=".widgets.fcm.MyFirebaseMessagingService"
+                android:enabled="true"
+                android:exported="true">
+                <intent-filter>
+                    <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                </intent-filter>
+            </service>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#009464</color>
-    <color name="colorPrimaryDark">#009464</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#11a229</color>
+    <color name="colorPrimaryDark">#11a229</color>
+    <color name="colorAccent">#fe0101</color>
 
     <color name="black">#333333</color>
-    <color name="red">#e31b23</color>
+    <color name="red">#fe0101</color>
     <color name="red_press">#b61619</color>
 
     <color name="white">#ffffff</color>
@@ -18,6 +18,7 @@
     <color name="bright_blue">#33B5E5</color>
     <color name="blue_background_card">#3b73af</color>
     <color name="background_chat">#F5F5F5</color>
+    <color name="background_product_list">#F9F9F9</color>
 
     <color name="blue_background_login_fb">#3b5998</color>
     <color name="blue_background_login_fb_press">#303F9F</color>
@@ -42,13 +43,15 @@
 
 
     <color name="gray">#a6a6a6</color>
-    <color name="green">#27c24c</color>
+    <color name="pink">#f64189</color>
+    <color name="green">#1ddd3d</color>
     <color name="txt_default">#808080</color>
     <color name="gray_very_light">#DDDDDD</color>
     <color name="gray_light_opacity">#DCBBBBBB</color>
 
-    <color name="color_primary">#009464</color>
-    <color name="color_primary_active">#009464</color>
+    <color name="color_primary">#FF5252</color>
+    <color name="color_primary_active">#fe0101</color>
+
     <color name="color_info">#23b7e5</color>
     <color name="color_info_active">#19a9d5</color>
     <color name="color_danger">#f05050</color>
@@ -58,7 +61,7 @@
     <color name="color_success">#27c24c</color>
     <color name="color_success_active">#23ad44</color>
 
-    <color name="color_background_default">#F5F5F5</color>
+    <color name="color_background_default">#f9f9f9</color>
 
     <color name="color_text_default">#808080</color>
 
@@ -79,4 +82,11 @@
 
     <color name="titleTabColor">#ffffff</color>
     <color name="titleSelectedTabColor">#3F51B5</color>
+
+    <color name="fillColorNavigation">#ffffff</color>
+
+    <color name="progressColor">#11a229</color>
+    <color name="progressBackground">#32000000</color>
+    <color name="progressColorTextTitle">#808080</color>
+    <color name="bg_default">#f9f9f9</color>
 </resources>
