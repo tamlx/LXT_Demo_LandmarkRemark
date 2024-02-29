@@ -21,10 +21,6 @@ public interface HomeActivityViewInterface extends BaseViewInterface {
 
     void destroyMapFragment();
 
-    void showMap();
-
-    void showLayoutFragmentContainer();
-
     void showTutorial(TutorialModel tutorial, TutorialView.TutorialListener listener);
 
     void hideTutorial();

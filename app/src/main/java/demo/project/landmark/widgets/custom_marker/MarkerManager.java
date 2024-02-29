@@ -143,7 +143,7 @@ public class MarkerManager<T extends CustomMarker> implements
                     String title = item.getItemModel().getTitle();
                     tvTitle.setText(title);
 
-                    tvDescription.setText("Bình luận: " + item.getItemModel().getDescription());
+                    tvDescription.setText("Note: " + item.getItemModel().getDescription());
 
                 }
 

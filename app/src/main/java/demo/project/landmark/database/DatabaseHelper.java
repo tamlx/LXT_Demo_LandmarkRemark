@@ -6,15 +6,16 @@ import android.database.sqlite.SQLiteDatabase;
 import com.j256.ormlite.android.AndroidConnectionSource;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 
 import b.laixuantam.myaarlibrary.helper.MyLog;
+import demo.project.landmark.database.table_note.NoteSaved;
 
 
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper
 {
-    private static final String NAME = "database.db";
+    private static final String NAME = "db_landmark.db";
     private static final int VERSION = 1;
-//    private AirPortDao airPortDao;
 
     public DatabaseHelper(Context context)
     {
@@ -35,14 +36,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         MyLog.d("DatabaseHelper", "Upgrade DB: " + oldVersion + " to " + newVersion);
         dropAllTable();
         createAllTable();
-//        AppProvider.getPreferences().clear();
     }
 
     private void dropAllTable()
     {
         try
         {
-//            TableUtils.dropTable(connectionSource, AirPortModel.class, true);
+            TableUtils.dropTable(connectionSource, NoteSaved.class, true);
         }
         catch (Exception e)
         {
@@ -54,7 +54,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
     {
         try
         {
-//            TableUtils.createTableIfNotExists(connectionSource, AirPortModel.class);
+            TableUtils.createTableIfNotExists(connectionSource, NoteSaved.class);
         }
         catch (Exception e)
         {
@@ -69,25 +69,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         createAllTable();
     }
 
-//    public synchronized AirPortDao getAirPortDao() throws SQLException
-//    {
-//        if (airPortDao == null)
-//        {
-//            airPortDao = getDao(AirPortModel.class);
-//        }
-//
-//        return airPortDao;
-//    }
-
 
     @Override
     public void close()
     {
         super.close();
-
-//        airPortDao = null;
     }
-
-
 
 }

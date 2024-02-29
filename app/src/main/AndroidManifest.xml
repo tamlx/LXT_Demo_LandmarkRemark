@@ -53,7 +53,7 @@
 
         <meta-data
             android:name="DATABASE"
-            android:value="landmark_remark.db" />
+            android:value="db_landmark.db" />
         <meta-data
             android:name="VERSION"
             android:value="1" />

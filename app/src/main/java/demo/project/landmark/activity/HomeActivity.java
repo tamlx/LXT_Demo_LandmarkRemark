@@ -1,8 +1,11 @@
 package demo.project.landmark.activity;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -12,6 +15,7 @@ import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 
@@ -54,8 +58,31 @@ public class HomeActivity extends BaseFragmentActivity<HomeActivityViewInterface
 
         handler.postDelayed(() -> {
             showHomeTimKiemTutorial();
-        }, 2000);
+        }, 3000);
 
+        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            buildAlertMessageNoGps();
+        }
+    }
+
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
     }
 
     private void setKeyboardVisibilityListener(final OnKeyboardVisibilityListener onKeyboardVisibilityListener) {
@@ -82,6 +109,8 @@ public class HomeActivity extends BaseFragmentActivity<HomeActivityViewInterface
             }
         });
     }
+
+
 
     @Override
     public void onVisibilityChanged(boolean visible) {
@@ -137,7 +166,7 @@ public class HomeActivity extends BaseFragmentActivity<HomeActivityViewInterface
 
     @Override
     protected int getFragmentContainerId() {
-        return R.id.home_activity_container;
+        return 0;
     }
 
 
@@ -145,6 +174,9 @@ public class HomeActivity extends BaseFragmentActivity<HomeActivityViewInterface
     protected void onResume() {
         super.onResume();
         locationHelper.checkPlayServices();
+        if(locationHelper.getmLastLocation() == null ){
+            locationHelper.checkpermission();
+        }
     }
 
     @Override
@@ -198,10 +230,6 @@ public class HomeActivity extends BaseFragmentActivity<HomeActivityViewInterface
         }
     }
 
-    public void showLayoutMap() {
-        showHeaderAndFooterHome();
-    }
-
     public void reloadGetCurrentLocation() {
         if (locationHelper != null && locationHelper.getmLastLocation() == null) {
             locationHelper.checkpermission();
@@ -227,10 +255,7 @@ public class HomeActivity extends BaseFragmentActivity<HomeActivityViewInterface
                 fm.popBackStack();
             }
 
-            view.showLayoutFragmentContainer();
-
         } else {
-            showHeaderAndFooterHome();
             checkFragment();
         }
 
@@ -250,20 +275,8 @@ public class HomeActivity extends BaseFragmentActivity<HomeActivityViewInterface
     }
 
 
-    private void changeToLoginActivity() {
-
-        Intent intent = new Intent(HomeActivity.this, LoginAndRegisterActivity.class);
-
-        startActivity(intent);
-    }
-
-    public void showHeaderAndFooterHome() {
-        isShowContainer = 0;
-        view.showMap();
-    }
-
     private void showHomeTimKiemTutorial() {
-        TutorialModel model = new TutorialModel(R.id.btnSearch, R.string.title_timkiem, R.layout.view_tutorial_home_tim_kiem);
+        TutorialModel model = new TutorialModel(R.id.btnSearch, R.string.tutorial_timkiem, R.layout.view_tutorial_home_tim_kiem);
         view.showTutorial(model, new TutorialView.TutorialListener() {
             @Override
             public void onClose() {

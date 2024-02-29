@@ -6,6 +6,7 @@
 
     <string name="gg_api_key">AIzaSyC2FH8_SIGLkrcgrr19iDwhoPS1cvB-hjw</string>
     <string name="title_timkiem">Tìm kiếm</string>
+    <string name="tutorial_timkiem">Tìm kiếm dữ liệu được lưu tại database local, khi người dùng chọn add note và save lại thì data sẽ được lưu giữ lại, mục đích mô phỏng cho tính năng search các note được lưu trên Database live.</string>
     <string name="title_addnote">Add Note</string>
 
 

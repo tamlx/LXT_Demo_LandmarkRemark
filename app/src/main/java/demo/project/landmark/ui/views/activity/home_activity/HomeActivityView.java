@@ -1,15 +1,23 @@
 package demo.project.landmark.ui.views.activity.home_activity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.location.Location;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,16 +27,25 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import b.laixuantam.myaarlibrary.base.BaseUiContainer;
 import b.laixuantam.myaarlibrary.base.BaseView;
 import b.laixuantam.myaarlibrary.helper.AppUtils;
+import b.laixuantam.myaarlibrary.helper.MyLog;
 import b.laixuantam.myaarlibrary.helper.map.drawroutemap.DrawMarker;
+import b.laixuantam.myaarlibrary.widgets.cptr.PtrDefaultHandler;
+import b.laixuantam.myaarlibrary.widgets.cptr.PtrFrameLayout;
+import b.laixuantam.myaarlibrary.widgets.cptr.loadmore.OnLoadMoreListener;
+import b.laixuantam.myaarlibrary.widgets.cptr.recyclerview.RecyclerAdapterWithHF;
+import b.laixuantam.myaarlibrary.widgets.recyclerviewenhanced.RecyclerTouchListener;
 import b.laixuantam.myaarlibrary.widgets.touch_view_anim.scaletouchlistener.ScaleTouchListener;
 import b.laixuantam.myaarlibrary.widgets.tutorial.TutorialModel;
 import b.laixuantam.myaarlibrary.widgets.tutorial.TutorialView;
 import demo.project.landmark.R;
 import demo.project.landmark.activity.HomeActivity;
+import demo.project.landmark.adapter.ListNoteAdapter;
+import demo.project.landmark.database.table_note.NoteSaved;
 import demo.project.landmark.dependency.AppProvider;
 import demo.project.landmark.model.NotesModel;
 import demo.project.landmark.widgets.custom_marker.CustomMarker;
@@ -43,14 +60,9 @@ public class HomeActivityView extends BaseView<HomeActivityView.UiContainer> imp
     private GoogleMap mMap;
     private Location loc;
     private MarkerManager<NetworkMarker> networkMarkerManager;
-    private ArrayList<NetworkMarker> listMarker;
-    private ArrayList<NetworkMarker> listMarkerInBounds = new ArrayList<>();
 
     private final int MIN_ZOOM = 16;
 
-    boolean isClickMarker = false;
-
-    LatLng origin = new LatLng(10.805655288131444, 106.71303480863571);
 
     @Override
     public void init(HomeActivity activity, HomeActivityViewCallback callback) {
@@ -59,64 +71,102 @@ public class HomeActivityView extends BaseView<HomeActivityView.UiContainer> imp
         setUpViewControll();
 
         initilizeMap();
+
+        setUpListNote();
     }
 
     private void setUpViewControll() {
 
-        String fullname = AppProvider.getPreferences().getUsername();
-        String address = AppProvider.getPreferences().getUserAddress();
-        String avata = AppProvider.getPreferences().getUserImage();
-
-        View hView = ui.navView.getHeaderView(0);
-
-        ui.imageViewHeader = hView.findViewById(R.id.imageViewHeader);
-        ui.tvUsernameHeader = hView.findViewById(R.id.tvUsernameHeader);
-        ui.tvUsernameHeader.setText(fullname);
-        if (!TextUtils.isEmpty(avata)) {
-            AppProvider.getImageHelper().displayImage(avata, ui.imageViewHeader, null, R.drawable.ic_user_default, true);
-        }
-
-        ui.btnLogin = ui.navView.findViewById(R.id.btnLogin);
-
         ScaleTouchListener.Config conf = new ScaleTouchListener.Config(100, 1f, 0.5f);
 
-        ui.btnMenu.setOnTouchListener(new ScaleTouchListener(conf) {
-            @Override
-            public void onClick(View view) {
-                openDrawer();
-            }
-        });
-        ui.btnAddNote.setOnTouchListener(new ScaleTouchListener(conf) {
-            @Override
-            public void onClick(View view) {
-//                callback.onClickAddNote();
-                mMap.clear();
-                NotesModel notesModel = new NotesModel();
-                notesModel.setTitle("title");
-                notesModel.setDescription("description");
+        ui.btnAddNote.setOnClickListener(this);
+        ui.btnSearch.setOnClickListener(this);
+        ui.btnBackLayoutAddNote.setOnClickListener(this);
+        ui.btnBackHeaderListNote.setOnClickListener(this);
+        ui.btnSubmitAddNote.setOnClickListener(this);
 
-                NetworkMarker networkMarker = new NetworkMarker(getContext(), new LatLng(loc.getLatitude(), loc.getLongitude()),notesModel);
-                networkMarkerManager.addMarker(networkMarker);
-            }
-        });
-        ui.btnLogin.setOnTouchListener(new ScaleTouchListener(conf) {
+        ui.edtInputSearchNote.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onClick(View view) {
-                if (!isDrawerOpen()) {
-                    AppUtils.hideKeyBoard(getView());
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (!TextUtils.isEmpty(editable)){
+                    String titleFilter = editable.toString().trim();
+                    listDatas.clear();
+                    List<NoteSaved> noteSaveds = NoteSaved.find(NoteSaved.class, "title LIKE ? OR description LIKE ?", titleFilter + "%" , titleFilter + "%" );
+                    listDatas.addAll(noteSaveds);
+                    noteSavedAdapter.notifyDataSetChanged();
+                }else {
+                    listDatas.clear();
+                    List<NoteSaved> noteSaveds = NoteSaved.listAll(NoteSaved.class);
+                    listDatas.addAll(noteSaveds);
+                    noteSavedAdapter.notifyDataSetChanged();
                 }
             }
         });
-
     }
-
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btnAddNote:
+                showLayoutAddNote();
+                break;
 
-            case R.id.btnLogin:
-                closeDrawer();
+            case R.id.btnBackLayoutAddNote:
+                showMap();
+                break;
+
+            case R.id.btnSubmitAddNote:
+                if (TextUtils.isEmpty(ui.edtInputUsername.getText())) {
+                    ui.edtInputUsername.setError("Nhập username");
+                    return;
+                }
+
+                if (TextUtils.isEmpty(ui.edtInputDescription.getText())) {
+                    ui.edtInputDescription.setError("Nhập note");
+                    return;
+                }
+                AppUtils.hideKeyBoard(getView());
+
+                String username = ui.edtInputUsername.getText().toString().trim();
+                String des = ui.edtInputDescription.getText().toString().trim();
+
+                NotesModel notesModel = new NotesModel();
+                notesModel.setTitle(username);
+                notesModel.setDescription(des);
+
+                List<NoteSaved> noteSaveds = NoteSaved.find(NoteSaved.class, "title = ?", username);
+                if (noteSaveds != null && noteSaveds.size() > 0) {
+                    Toast.makeText(getContext(), "Note đã được lưu", Toast.LENGTH_LONG).show();
+                    return;
+                } else {
+                    NoteSaved itemNoteSaved = new NoteSaved(notesModel, loc.getLatitude(), loc.getLongitude());
+
+                    itemNoteSaved.save();
+
+                    Toast.makeText(getContext(), "Lưu note thành công", Toast.LENGTH_SHORT).show();
+                }
+
+                mMap.clear();
+                NetworkMarker networkMarker = new NetworkMarker(getContext(), new LatLng(loc.getLatitude(), loc.getLongitude()), notesModel);
+                networkMarkerManager.addMarker(networkMarker);
+                showMap();
+                break;
+            case  R.id.btnSearch:
+                showLayoutListNote();
+                break;
+            case  R.id.btnBackHeaderListNote:
+                AppUtils.hideKeyBoard(getView());
+                showMap();
                 break;
         }
     }
@@ -211,24 +261,36 @@ public class HomeActivityView extends BaseView<HomeActivityView.UiContainer> imp
         }
     }
 
-    @Override
-    public void showMap() {
+    private void showMap() {
         setVisible(ui.layout_map);
+        setGone(ui.rLayoutAddNote);
+        setGone(ui.rLayoutListNote);
         if (mMap != null) {
             mMap.getUiSettings().setAllGesturesEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
         }
 
-        setGone(ui.home_activity_container);
     }
 
-    @Override
-    public void showLayoutFragmentContainer() {
+    private void showLayoutAddNote() {
         setGone(ui.layout_map);
-        setVisible(ui.home_activity_container);
+        setVisible(ui.rLayoutAddNote);
         if (mMap != null)
             mMap.getUiSettings().setAllGesturesEnabled(false);
     }
+
+    private void showLayoutListNote(){
+        setGone(ui.layout_map);
+        setVisible(ui.rLayoutListNote);
+        if (mMap != null)
+            mMap.getUiSettings().setAllGesturesEnabled(false);
+
+        listDatas.clear();
+        List<NoteSaved> noteSaveds = NoteSaved.listAll(NoteSaved.class);
+        listDatas.addAll(noteSaveds);
+        noteSavedAdapter.notifyDataSetChanged();
+    }
+
 
     @Override
     public void showTutorial(TutorialModel tutorial, TutorialView.TutorialListener listener) {
@@ -236,6 +298,27 @@ public class HomeActivityView extends BaseView<HomeActivityView.UiContainer> imp
         ui.tutorialView.setListener(listener);
 //        ui.tutorialView.showTutorialDelay(tutorial);
         ui.tutorialView.showTutorial(tutorial);
+    }
+
+
+    private List<NoteSaved> listDatas = new ArrayList<>();
+    private ListNoteAdapter noteSavedAdapter;
+
+    private void setUpListNote() {
+        noteSavedAdapter = new ListNoteAdapter(getContext(), listDatas);
+        noteSavedAdapter.setListener(item -> {
+            AppUtils.hideKeyBoard(getView());
+            NotesModel notesModel = new NotesModel();
+            notesModel.setTitle(item.getTitle());
+            notesModel.setDescription(item.getDescription());
+            mMap.clear();
+            NetworkMarker networkMarker = new NetworkMarker(getContext(), new LatLng(loc.getLatitude(), loc.getLongitude()), notesModel);
+            networkMarkerManager.addMarker(networkMarker);
+            showMap();
+        });
+        ui.recycler_view_list_note.setLayoutManager(new LinearLayoutManager(getContext()));
+        ui.recycler_view_list_note.setAdapter(noteSavedAdapter);
+
     }
 
     @Override
@@ -255,7 +338,7 @@ public class HomeActivityView extends BaseView<HomeActivityView.UiContainer> imp
 
     public static class UiContainer extends BaseUiContainer {
 
-        @UiElement(R.id.layout_map)
+        @UiElement(R.id.rLayoutMap)
         public View layout_map;
 
         @UiElement(R.id.map)
@@ -264,8 +347,6 @@ public class HomeActivityView extends BaseView<HomeActivityView.UiContainer> imp
         @UiElement(R.id.drawer_layout)
         public DrawerLayout drawer;
 
-        @UiElement(R.id.home_activity_container)
-        public FrameLayout home_activity_container;
 
         @UiElement(R.id.nav_view)
         public NavigationView navView;
@@ -279,21 +360,37 @@ public class HomeActivityView extends BaseView<HomeActivityView.UiContainer> imp
         @UiElement(R.id.btnAddNote)
         public View btnAddNote;
 
-        //layout header
-        @UiElement(R.id.imageViewHeader)
-        public ImageView imageViewHeader;
+        //------end----------------
 
-        @UiElement(R.id.tvUsernameHeader)
-        public TextView tvUsernameHeader;
+        //layout AddNote
+        @UiElement(R.id.rLayoutAddNote)
+        public View rLayoutAddNote;
+
+        @UiElement(R.id.btnBackLayoutAddNote)
+        public View btnBackLayoutAddNote;
+
+        @UiElement(R.id.edtInputUsername)
+        public EditText edtInputUsername;
+
+        @UiElement(R.id.edtInputDescription)
+        public EditText edtInputDescription;
+
+        @UiElement(R.id.btnSubmitAddNote)
+        public View btnSubmitAddNote;
 
         //------end----------------
 
-        //layout nav-menu
+        @UiElement(R.id.rLayoutListNote)
+        public View rLayoutListNote;
 
-        @UiElement(R.id.btnLogin)
-        public View btnLogin;
+        @UiElement(R.id.btnBackHeaderListNote)
+        public View btnBackHeaderListNote;
 
-        //------end----------------
+        @UiElement(R.id.edtInputSearchNote)
+        public EditText edtInputSearchNote;
+
+        @UiElement(R.id.recycler_view_list_note)
+        public RecyclerView recycler_view_list_note;
 
 
         @UiElement(R.id.tutorial)

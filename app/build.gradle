@@ -4,8 +4,8 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "qtc.project.choquanhta"
-        minSdkVersion 19
+        applicationId "demo.project.landmark"
+        minSdkVersion 25
         targetSdkVersion 28
         versionCode 7
         versionName "1.0"
